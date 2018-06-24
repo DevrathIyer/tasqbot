@@ -3,6 +3,18 @@ require('dotenv-extended').load();
 
 var builder = require('botbuilder');
 var restify = require('restify');
+var azure = require('botbuilder-azure'); 
+
+var documentDbOptions = {
+    host: 'https://tasqbot.documents.azure.com:443/', 
+    masterKey: '6XUSVEJUy7fqUUnTL87aSszgQirY8PjZaaKLgzvIuPjjtcyU9sXWgnbmED9MAm4Srl88NB9NUPQXj4JkXTJNRg==', 
+    database: 'botdocs',   
+    collection: 'botdata'
+};
+
+var docDbClient = new azure.DocumentDbClient(documentDbOptions);
+
+var cosmosStorage = new azure.AzureBotStorage({ gzipData: false }, docDbClient);
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -69,22 +81,9 @@ var bot = new builder.UniversalBot(connector, [
             session.endConversation(`Sorry, I didn't understand the response. Let's start over.`);
         }
     },
-]).set('storage', inMemoryStorage); // Register in memory storage
+]).set('storage', cosmosStorage); // Register in memory storage
 
 
-bot.on('conversationUpdate', function (activity) {
-    // when user joins conversation, send instructions
-    if (activity.membersAdded) {
-        activity.membersAdded.forEach(function (identity) {
-            if (identity.id === activity.address.bot.id) {
-                var reply = new builder.Message()
-                    .address(activity.address)
-                    .text(instructions);
-                bot.send(reply);
-            }
-        });
-    }
-});
 bot.dialog('getName', [
     (session, args, next) => {
         // store reprompt flag
