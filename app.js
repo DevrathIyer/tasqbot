@@ -29,13 +29,6 @@ var connector = new builder.ChatConnector({
 });
 server.post('/api/messages', connector.listen());
 
-var instructions = 'Welcome to the Bot to showcase the DirectLine API. Send \'Show me a hero card\' or \'Send me a BotFramework image\' to see how the DirectLine client supports custom channel data. Any other message will be echoed.';
-
-// Bot Storage: Here we register the state storage for your bot.    
-// Default store: volatile in-memory store - Only for prototyping!
-// We provide adapters for Azure Table, CosmosDb, SQL Azure, or you can implement your own!
-// For samples and documentation, see: https://github.com/Microsoft/BotBuilder-Azure
-var inMemoryStorage = new builder.MemoryBotStorage();
 
 var bot = new builder.UniversalBot(connector, [
     // this section becomes the root dialog
@@ -57,7 +50,7 @@ var bot = new builder.UniversalBot(connector, [
 
         // check for a response
         if (results.response) {
-            const name = session.privateConversationData.name = results.response;
+            const name = session.userData.name = results.response;
 
             // When calling another dialog, you can pass arguments in the second parameter
             session.beginDialog('getAge', { name: name });
@@ -72,8 +65,8 @@ var bot = new builder.UniversalBot(connector, [
 
         // check for a response
         if (results.response) {
-            const age = session.privateConversationData.age = results.response;
-            const name = session.privateConversationData.name;
+            const age = session.userData.age = results.response;
+            const name = session.userData.name;
 
             session.endConversation(`Hello ${name}. You are ${age}`);
         } else {
@@ -91,6 +84,11 @@ bot.dialog('getName', [
             session.dialogData.isReprompt = args.isReprompt;
         }
 
+        if(session.userData.name)
+        {
+            session.send(`Oh, I know you, ${session.userData.name}! Glad to see you back!`);
+            session.endDialogWithResult({ response: session.userData.name });
+        }
         // prompt user
         builder.Prompts.text(session, 'What is your name?');
     },
@@ -135,7 +133,7 @@ bot.dialog('getAge', [
 
         // prompt user
         builder.Prompts.number(session, `How old are you, ${name}?`);
-    },
+    }, 
     (session, results, next) => {
         const age = results.response;
 
