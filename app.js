@@ -89,8 +89,10 @@ bot.dialog('getName', [
             session.send(`Oh, I know you, ${session.userData.name}! Glad to see you back!`);
             session.endDialogWithResult({ response: session.userData.name });
         }
-        // prompt user
-        builder.Prompts.text(session, 'What is your name?');
+        else{
+            // prompt user
+            builder.Prompts.text(session, 'What is your name?');
+        }
     },
     (session, results, next) => {
         const name = results.response;
