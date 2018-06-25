@@ -84,7 +84,7 @@ bot.dialog('getName', [
             session.dialogData.isReprompt = args.isReprompt;
         }
 
-        if(session.userData.name)
+        if(session.userData.name != null)
         {
             session.send(`Oh, I know you, ${session.userData.name}! Glad to see you back!`);
             session.endDialogWithResult({ response: session.userData.name });
